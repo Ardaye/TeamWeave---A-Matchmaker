@@ -1,0 +1,80 @@
+﻿# 🚀 TeamWeave Browser - Quick Start
+
+## ⚡ In 30 Seconds
+
+1. **Open File**
+   ```
+   C:\Users\aryan\source\repos\TeamWeave\index.html
+   ```
+   → Double-click it → Browser opens automatically
+
+2. **Register Participants**
+   - Click "➕ Register Participant"
+   - Fill name, email, select skills
+   - Click "Register"
+
+3. **Create Teams**
+   - Click "🔄 Run Clustering"
+   - Set team size (default: 4)
+   - Click "Run Clustering"
+
+4. **View & Export**
+   - Click "Teams" tab to see results
+   - Click "📥 Export" to download CSV
+
+---
+
+## 🎮 Main Commands
+
+| Action | Steps |
+|--------|-------|
+| **Open App** | Double-click `index.html` |
+| **Register** | Dashboard → "➕ Register Participant" → Fill form → Register |
+| **Cluster** | Dashboard → "🔄 Run Clustering" → Set size → Run |
+| **View Participants** | Click "Participants" tab |
+| **View Teams** | Click "Teams" tab |
+| **Lock Team** | Teams tab → "[🔒 Lock]" button |
+| **Export** | Dashboard → "📥 Export..." |
+| **Filter** | Participants tab → Select category |
+| **View History** | Click "Audit Trail" tab |
+| **Refresh** | Auto-refreshes every 10 seconds |
+
+---
+
+## 🎯 Available Skills
+
+```
+Frontend: React, Vue.js, Angular, JavaScript, HTML/CSS
+Backend: C#, Python, Java, Node.js, PHP
+Data: SQL, Python DS, ML, Data Analysis, Big Data
+Design: UI/UX, Figma, Graphic Design, Web Design
+DevOps: Docker, Kubernetes, AWS, Azure, CI/CD
+```
+
+---
+
+## 📱 Browser Compatibility
+
+✅ Chrome  ✅ Firefox  ✅ Safari  ✅ Edge  ✅ Mobile
+
+---
+
+## 💾 Data
+
+- **Stored In**: Browser memory
+- **Persists**: While tab open
+- **Save**: Export to CSV
+- **Clear**: Refresh page
+
+---
+
+## 📂 Location
+
+```
+File: index.html
+Path: C:\Users\aryan\source\repos\TeamWeave\index.html
+```
+
+---
+
+**That's it! You're ready to go! 🎉**

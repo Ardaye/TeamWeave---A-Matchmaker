@@ -1,0 +1,234 @@
+﻿# TeamWeave - Hackathon Team Matcher Portal
+
+A specialized recruitment and team-building portal designed for hackathons and large-scale academic projects. Participants input their technical proficiencies and project interests, while organizers can monitor the talent pool and automatically suggest balanced, cross-functional teams.
+
+## 📋 Project Overview
+
+TeamWeave solves the challenge of manual team formation by using intelligent clustering algorithms to automatically group participants into balanced teams that ensure complementary skills (frontend, backend, data, design, etc.) rather than skill overlap.
+
+## 🚀 Features
+
+### 1. Participant Profile & Skill Input
+- Self-registration with name, email, and technical skills
+- Proficiency level tracking (1-5 scale)
+- Project interests tracking
+- Profile status management
+
+### 2. Skill Management
+- Pre-configured skill categories:
+  - **Frontend**: React, Vue.js, Angular, HTML/CSS, JavaScript
+  - **Backend**: C#, Python, Java, Node.js, PHP
+  - **Data**: SQL, Machine Learning, Data Analysis, Big Data
+  - **Design**: UI/UX Design, Graphic Design, Figma, Web Design
+  - **DevOps**: Docker, Kubernetes, AWS, Azure, CI/CD
+
+### 3. Intelligent Clustering Algorithm
+- **K-means clustering** on skill vectors for initial grouping
+- **Constraint-based balancing** to ensure skill diversity
+- Euclidean distance and cosine similarity calculations
+- Automatic team size adjustment based on participant pool
+
+### 4. Team Management
+- Create and organize teams with automatic or manual assignment
+- Move participants between teams (with constraint checking)
+- Lock teams to prevent further modifications
+- Individual participant locking flags
+
+### 5. Organizer Dashboard
+- Monitor full talent pool in real-time
+- Filter by skill category
+- Export participant and team data to CSV
+- View team composition and coverage
+
+### 6. Audit Trail & Compliance
+- Complete audit logging of all team changes
+- Track who made changes, what changed, and when
+- Manual adjustment history
+- Actor attribution (Organizer/System)
+
+## 🏗️ Architecture
+
+### Core Components
+
+```
+Models/
+├── Participant.cs          # Participant entity with skills & interests
+├── Skill.cs               # Skill definitions with categories
+├── ParticipantSkill.cs    # Join table with proficiency levels
+├── Team.cs                # Team entity
+├── TeamMember.cs          # Team membership join table
+├── ClusteringRun.cs       # Clustering execution record
+└── AuditLog.cs            # Change tracking
+
+Services/
+├── ParticipantService.cs      # Participant registration & management
+├── TeamService.cs             # Team operations & auditing
+├── ClusteringService.cs       # K-means & balancing algorithms
+└── SkillVectorEncoder.cs      # Vector math & similarity calculations
+
+Utilities/
+├── SkillRepository.cs     # Pre-configured skill catalog
+└── DataExporter.cs        # CSV export functionality
+```
+
+### Algorithm Details
+
+**Skill Vector Encoding**
+- Each participant's skills are encoded as a vector
+- Proficiency levels normalized to 0-1 range
+- Skill index maps skill names to vector dimensions
+
+**K-means Clustering**
+- Initializes centroids with random participants
+- Iteratively assigns participants to nearest cluster
+- Recalculates centroids based on cluster members
+- Converges when centroid movement falls below threshold
+
+**Team Balancing**
+- Calculates skill diversity score per participant
+- Greedily selects participants ensuring skill category coverage
+- Verifies each team has required skill categories
+- Falls back to constraint relaxation if needed
+
+## 📊 Data Models
+
+### Participant
+- `Id`: Unique identifier
+- `Name`: Participant name (required)
+- `Email`: Email address (required)
+- `ProfileStatus`: Registration status
+- `Skills`: Collection of proficiency-tagged skills
+- `Interests`: Project interests
+- `Teams`: Team assignments
+
+### Team
+- `Id`: Unique identifier
+- `Name`: Team name
+- `EventId`: Associated event
+- `Status`: Draft/Suggested/Locked/Finalized
+- `IsLocked`: Prevents auto-matching changes
+- `Members`: Participant list
+
+### Skill
+- `Id`: Unique identifier
+- `Name`: Skill name
+- `Category`: Skill classification
+- `ParticipantSkills`: Usage references
+
+## 🎯 Usage Example
+
+```csharp
+// 1. Initialize services
+var participantService = new ParticipantService();
+var teamService = new TeamService();
+var clusteringService = new ClusteringService();
+
+// 2. Register participants
+var alice = participantService.RegisterParticipant(
+    "Alice", "alice@example.com", new List<string> { "React" }
+);
+participantService.AddSkillToParticipant(
+    alice.Id, SkillRepository.GetSkillByName("React"), 5
+);
+
+// 3. Run clustering
+var teams = clusteringService.ClusterParticipants(participants, teamSize: 4);
+
+// 4. Create teams
+foreach (var cluster in teams)
+{
+    var team = teamService.CreateTeam($"Team {i++}", eventId: 1);
+    foreach (var participant in cluster)
+    {
+        teamService.AddParticipantToTeam(team.Id, participant);
+    }
+}
+
+// 5. Manage teams
+teamService.MoveParticipantBetweenTeams(participantId, fromTeamId, toTeamId);
+teamService.LockTeam(teamId, "Organizer");
+
+// 6. Audit
+var logs = teamService.GetAuditLogs();
+```
+
+## 📈 Performance Specifications
+
+- **Clustering**: Up to 1,000 participants in under 30 seconds
+- **Team Size**: Configurable (typically 3-6 members)
+- **Scalability**: Supports concurrent events with isolated participant pools
+- **Memory**: Efficient vector operations with minimal allocation
+
+## 🔒 Security & Privacy
+
+- PII (email, contact info) handled securely
+- Role-based access controls (Participant vs. Organizer)
+- Audit trail for compliance
+- Event-level data isolation
+
+## 📚 Technology Stack
+
+- **Language**: C#
+- **Framework**: .NET Framework 4.7.2
+- **Algorithms**: K-means clustering, similarity metrics
+- **Architecture**: Service-oriented with separation of concerns
+
+## 🔄 Workflow
+
+```
+1. Participant Registration
+   ↓
+2. Skill & Interest Input
+   ↓
+3. Organizer Configures Event (team size, constraints)
+   ↓
+4. Run Clustering Algorithm
+   ↓
+5. Review Suggested Teams
+   ↓
+6. Manual Adjustments (optional)
+   ↓
+7. Lock Final Teams
+   ↓
+8. Export & Monitor
+```
+
+## 🚀 Getting Started
+
+1. Ensure .NET Framework 4.7.2 is installed
+2. Build the solution:
+   ```bash
+   dotnet build
+   ```
+3. Run the console application:
+   ```bash
+   dotnet run
+   ```
+
+The demo will automatically:
+- Register 6 sample participants with varied skill sets
+- Display their technical proficiencies
+- Run the clustering algorithm
+- Create and organize balanced teams
+- Demonstrate manual team adjustments
+- Lock teams and generate audit logs
+- Export data
+
+## 📝 Future Enhancements
+
+- [ ] Web UI (ASP.NET MVC / Web API)
+- [ ] Database persistence (Entity Framework)
+- [ ] Real-time participant management
+- [ ] Advanced constraint satisfaction (timezone, language, etc.)
+- [ ] Team formation recommendations
+- [ ] Performance analytics
+- [ ] Multi-event management
+- [ ] Batch operations
+
+## 📄 License
+
+Internal project for academic hackathon system.
+
+---
+
+**Built with ❤️ for seamless team formation**

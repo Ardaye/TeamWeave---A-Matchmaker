@@ -1,0 +1,343 @@
+﻿@model System.Collections.Generic.List<TeamWeave.Models.Team>
+
+@{
+    ViewBag.Title = "Teams";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Teams - TeamWeave</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .team-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .team-name {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .team-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .team-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .status-draft {
+            background: #cbd5e0;
+            color: #333;
+        }
+
+        .status-locked {
+            background: #f6ad55;
+            color: white;
+        }
+
+        .team-members {
+            padding: 20px;
+        }
+
+        .member-list {
+            list-style: none;
+        }
+
+        .member-item {
+            padding: 10px;
+            background: #f7fafc;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .member-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .member-skills {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .team-actions {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .no-teams {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            color: #999;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .locked-badge {
+            background: #f6ad55;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👨‍💼 Teams</h1>
+            <div>
+                <button class="btn btn-primary" onclick="location.href='/Dashboard/Index'">← Back to Dashboard</button>
+            </div>
+        </header>
+
+        @if (Model == null || Model.Count == 0)
+        {
+            <div class="no-teams">
+                <h2>No Teams Created Yet</h2>
+                <p>Run the clustering algorithm from the dashboard to create teams automatically.</p>
+                <button class="btn btn-primary" onclick="location.href='/Dashboard/Index'" style="margin-top: 20px;">Go to Dashboard</button>
+            </div>
+        }
+        else
+        {
+            <div class="team-grid">
+                @foreach (var team in Model)
+                {
+                    <div class="team-card">
+                        <div class="team-header">
+                            <div class="team-name">
+                                @team.Name
+                                @if (team.IsLocked)
+                                {
+                                    <span class="locked-badge">🔒 LOCKED</span>
+                                }
+                            </div>
+                            <div class="team-meta">
+                                <span>Event ID: @team.EventId</span>
+                                <span>Members: @team.Members.Count</span>
+                            </div>
+                            <div class="team-status @(team.IsLocked ? "status-locked" : "status-draft")">
+                                @team.Status
+                            </div>
+                        </div>
+
+                        <div class="team-members">
+                            @if (team.Members != null && team.Members.Count > 0)
+                            {
+                                <ul class="member-list">
+                                    @foreach (var member in team.Members)
+                                    {
+                                        <li class="member-item">
+                                            <div>
+                                                <div class="member-name">@member.Participant.Name</div>
+                                                @if (member.Participant.Skills != null && member.Participant.Skills.Count > 0)
+                                                {
+                                                    <div class="member-skills">
+                                                        @string.Join(", ", member.Participant.Skills.Select(s => s.Skill.Name))
+                                                    </div>
+                                                }
+                                            </div>
+                                            @if (member.IsLocked)
+                                            {
+                                                <span style="color: #f6ad55;">🔒</span>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p style="color: #999;">No members in this team</p>
+                            }
+                        </div>
+
+                        <div class="team-actions">
+                            @if (!team.IsLocked)
+                            {
+                                <button class="btn btn-success" onclick="lockTeam(@team.Id)">🔒 Lock Team</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-danger" onclick="unlockTeam(@team.Id)">🔓 Unlock Team</button>
+                            }
+                            <button class="btn btn-primary" onclick="viewTeamDetails(@team.Id)">View Details</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <footer>
+        <p>&copy; 2024 TeamWeave | Total Teams: @(Model?.Count ?? 0)</p>
+    </footer>
+
+    <script>
+        function lockTeam(teamId) {
+            const actor = prompt('Enter your name (Organizer):');
+            if (!actor) return;
+
+            fetch('/Team/LockTeam', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `teamId=${teamId}&actor=${actor}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Team locked successfully');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+        }
+
+        function unlockTeam(teamId) {
+            const actor = prompt('Enter your name (Organizer):');
+            if (!actor) return;
+
+            fetch('/Team/UnlockTeam', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `teamId=${teamId}&actor=${actor}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Team unlocked successfully');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+        }
+
+        function viewTeamDetails(teamId) {
+            location.href = '/Team/Details/' + teamId;
+        }
+    </script>
+</body>
+</html>

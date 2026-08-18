@@ -1,0 +1,95 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Web.Http;
+using System.Web.Mvc;
+using TeamWeave.Models;
+using TeamWeave.Services;
+using TeamWeave.Utilities;
+
+namespace TeamWeave.Controllers
+{
+    public class ParticipantController : Controller
+    {
+        private static ParticipantService _participantService = new ParticipantService();
+
+        // GET: Participant
+        public ActionResult Index()
+        {
+            var participants = _participantService.GetAllParticipants();
+            return View(participants);
+        }
+
+        // GET: Participant/Register
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Participant/Register
+        [HttpPost]
+        public ActionResult Register(string name, string email, string[] skills)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email))
+                {
+                    return Json(new { success = false, message = "Name and email are required" });
+                }
+
+                if (skills == null || skills.Length == 0)
+                {
+                    return Json(new { success = false, message = "At least one skill is required" });
+                }
+
+                var participant = _participantService.RegisterParticipant(name, email, new List<string>(skills));
+
+                // Add skills to participant
+                foreach (var skillName in skills)
+                {
+                    var skill = SkillRepository.GetSkillByName(skillName);
+                    if (skill != null)
+                    {
+                        _participantService.AddSkillToParticipant(participant.Id, skill, 3);
+                    }
+                }
+
+                return Json(new { success = true, message = "Participant registered successfully", participantId = participant.Id });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Participant/Details/5
+        public ActionResult Details(int id)
+        {
+            var participant = _participantService.GetParticipantById(id);
+            if (participant == null)
+                return HttpNotFound();
+
+            return View(participant);
+        }
+
+        // GET: Participant/Skills?category=Frontend
+        public ActionResult GetSkillsByCategory(string category)
+        {
+            var skills = SkillRepository.GetSkillsByCategory(category);
+            return Json(skills, JsonRequestBehavior.AllowGet);
+        }
+
+        // GET: Participant/AllSkills
+        public ActionResult GetAllSkills()
+        {
+            var skills = SkillRepository.GetAllSkills();
+            return Json(skills, JsonRequestBehavior.AllowGet);
+        }
+
+        // GET: Participant/Categories
+        public ActionResult GetCategories()
+        {
+            var categories = SkillRepository.GetAllCategories();
+            return Json(categories, JsonRequestBehavior.AllowGet);
+        }
+    }
+}

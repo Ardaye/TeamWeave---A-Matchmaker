@@ -1,0 +1,105 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Web.Mvc;
+using TeamWeave.Services;
+using TeamWeave.Utilities;
+
+namespace TeamWeave.Controllers
+{
+    public class DashboardController : Controller
+    {
+        private static ParticipantService _participantService = new ParticipantService();
+        private static TeamService _teamService = new TeamService();
+
+        // GET: Dashboard
+        public ActionResult Index()
+        {
+            var participants = _participantService.GetAllParticipants();
+            var teams = _teamService.GetAllTeams();
+            var categories = SkillRepository.GetAllCategories();
+
+            ViewBag.TotalParticipants = participants.Count;
+            ViewBag.TotalTeams = teams.Count;
+            ViewBag.SkillCategories = categories;
+
+            return View(new { Participants = participants, Teams = teams });
+        }
+
+        // GET: Dashboard/FilterBySkill?category=Frontend
+        public ActionResult FilterBySkill(string category)
+        {
+            var participants = _participantService.GetParticipantsBySkillCategory(category);
+            return Json(participants, JsonRequestBehavior.AllowGet);
+        }
+
+        // GET: Dashboard/ExportParticipants
+        public ActionResult ExportParticipants()
+        {
+            try
+            {
+                var participants = _participantService.GetAllParticipants();
+                var csv = DataExporter.ExportParticipantsToCSV(participants);
+
+                return File(System.Text.Encoding.UTF8.GetBytes(csv), 
+                    "text/csv", 
+                    $"participants_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Dashboard/ExportTeams
+        public ActionResult ExportTeams()
+        {
+            try
+            {
+                var teams = _teamService.GetAllTeams();
+                var csv = DataExporter.ExportTeamsToCSV(teams);
+
+                return File(System.Text.Encoding.UTF8.GetBytes(csv), 
+                    "text/csv", 
+                    $"teams_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Dashboard/ExportAuditLog
+        public ActionResult ExportAuditLog()
+        {
+            try
+            {
+                var logs = _teamService.GetAuditLogs();
+                var csv = DataExporter.ExportAuditLogsToCSV(logs);
+
+                return File(System.Text.Encoding.UTF8.GetBytes(csv), 
+                    "text/csv", 
+                    $"audit_log_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Dashboard/Stats
+        public ActionResult GetStats()
+        {
+            var participants = _participantService.GetAllParticipants();
+            var teams = _teamService.GetAllTeams();
+            var categories = SkillRepository.GetAllCategories();
+
+            return Json(new
+            {
+                totalParticipants = participants.Count,
+                totalTeams = teams.Count,
+                totalSkillCategories = categories.Count,
+                averageTeamSize = teams.Count > 0 ? participants.Count / teams.Count : 0
+            }, JsonRequestBehavior.AllowGet);
+        }
+    }
+}

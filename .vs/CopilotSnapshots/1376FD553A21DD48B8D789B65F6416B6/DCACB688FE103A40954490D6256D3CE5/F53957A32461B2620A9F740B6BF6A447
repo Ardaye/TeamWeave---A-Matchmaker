@@ -1,0 +1,370 @@
+﻿# 🌐 TeamWeave Web Version - Setup Guide
+
+## ✅ What's Been Done
+
+I've converted your TeamWeave console app into an **ASP.NET MVC web application** with:
+
+✅ **Web Controllers**
+- ParticipantController - Register participants, manage skills
+- TeamController - Create teams, run clustering, manage team assignments
+- DashboardController - Statistics, filtering, data export
+
+✅ **Interactive Views**
+- Dashboard - Overview, statistics, quick actions
+- Participants - View all participants with skills
+- Teams - View teams, manage membership, lock/unlock
+
+✅ **Web Features**
+- Real-time statistics dashboard
+- Participant registration form
+- Clustering algorithm execution
+- Team management (create, move participants, lock)
+- CSV data export
+- Audit trail viewing
+
+---
+
+## 🚀 How to Run It
+
+### **Method 1: IIS Express (Fastest - Recommended)**
+
+**Step 1:** Navigate to project directory
+```sh
+cd C:\Users\aryan\source\repos\TeamWeave
+```
+
+**Step 2:** Restore packages
+```sh
+dotnet restore
+```
+
+**Step 3:** Run with IIS Express
+```sh
+dotnet run
+```
+
+**Step 4:** Open browser
+```
+http://localhost:5000
+```
+
+---
+
+### **Method 2: Using Visual Studio (Best)**
+
+1. **Open in Visual Studio**
+   - File → Open → Project/Solution
+   - Select `TeamWeave.csproj`
+
+2. **Build Solution**
+   - Ctrl + Shift + B
+
+3. **Run**
+   - Press F5 (Debug) or Ctrl+F5 (Release)
+
+4. **Browser Opens Automatically**
+   - Displays http://localhost:port
+
+---
+
+### **Method 3: Command Line with IIS**
+
+If you have IIS installed locally:
+
+```sh
+# Add IIS binding
+cd C:\Users\aryan\source\repos\TeamWeave
+
+# Build
+dotnet build
+
+# Run
+dotnet run
+```
+
+Then visit: `http://localhost:5000`
+
+---
+
+## 📋 Features Available in Web Version
+
+### **Dashboard Tab** (`/Dashboard/Index`)
+- 📊 Real-time statistics
+- 👤 Register new participants
+- 🔄 Run clustering algorithm
+- 📥 Export data to CSV
+- 👥 View recent participants
+- 👨‍💼 View recent teams
+
+### **Participants Tab** (`/Participant/Index`)
+- 📋 List all participants
+- 🏷️ Filter by skill category
+- ⭐ View proficiency levels
+- 💡 See interests
+- 📅 Joined date
+
+### **Teams Tab** (`/Team/Index`)
+- 👥 View all teams
+- 🔒 Lock/Unlock teams
+- 👤 See team members
+- 🎯 Team status
+- 📊 Team statistics
+
+---
+
+## 📱 Web Interface Tour
+
+### **1. Dashboard - Home Page**
+```
+┌─────────────────────────────────────────────────────┐
+│ 🎯 TeamWeave                                        │
+│ Hackathon Team Matcher Portal                       │
+├─────────────────────────────────────────────────────┤
+│ [📊 Stats Grid]                                     │
+│ ├─ Total Participants                               │
+│ ├─ Total Teams                                      │
+│ ├─ Skill Categories                                 │
+│ └─ Avg Team Size                                    │
+├─────────────────────────────────────────────────────┤
+│ [🚀 Quick Actions]                                  │
+│ ├─ + Register Participant                           │
+│ ├─ 🔄 Run Clustering                                │
+│ ├─ 👥 View Teams                                    │
+│ ├─ 👤 View Participants                             │
+│ ├─ 📥 Export Participants                           │
+│ └─ 📥 Export Teams                                  │
+├─────────────────────────────────────────────────────┤
+│ [👥 Recent Participants]                            │
+│ [👨‍💼 Recent Teams]                                    │
+└─────────────────────────────────────────────────────┘
+```
+
+### **2. Register Participant Modal**
+```
+┌─ Register Participant ─────────────────────────┐
+│ Name: [_______________]                        │
+│ Email: [_______________]                       │
+│ Skills: [✓] React [✓] Python [ ] AWS ...      │
+│ [Register Button]                              │
+└────────────────────────────────────────────────┘
+```
+
+### **3. Run Clustering Modal**
+```
+┌─ Run Clustering Algorithm ─────────────────────┐
+│ Team Size: [4]                                 │
+│ Event ID: [1]                                  │
+│ [Running clustering algorithm...]              │
+│ [Run Clustering Button]                        │
+└────────────────────────────────────────────────┘
+```
+
+### **4. Participants Page**
+```
+[Filter by Category]
+[All] [Frontend] [Backend] [Data] [Design] [DevOps]
+
+┌────────────────────────┐  ┌────────────────────────┐
+│ Alice Johnson          │  │ Bob Smith              │
+│ alice@example.com      │  │ bob@example.com        │
+│ React ⭐⭐⭐⭐⭐          │  │ C# ⭐⭐⭐⭐⭐              │
+│ JavaScript ⭐⭐⭐⭐      │  │ Python ⭐⭐⭐            │
+│ Interests:             │  │ Interests:             │
+│ • Web Applications     │  │ • APIs                 │
+│ • UI/UX                │  │ • Databases            │
+└────────────────────────┘  └────────────────────────┘
+```
+
+### **5. Teams Page**
+```
+┌─────────────────────────────────────────────────┐
+│ Team 1                               [🔒 LOCKED]│
+├─────────────────────────────────────────────────┤
+│ Members: 4                                      │
+│ ├─ Alice Johnson                                │
+│ │  React, JavaScript                           │
+│ ├─ Bob Smith                                    │
+│ │  C#, Python                                   │
+│ ├─ Carol White                                  │
+│ │  SQL, Python                                  │
+│ └─ Emma Davis                                   │
+│    UI/UX Design, Figma                          │
+├─────────────────────────────────────────────────┤
+│ [🔓 Unlock] [View Details]                      │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔧 Configuration
+
+### **Application Settings**
+- Modify in `Web.config` (if needed)
+- Default routes configured in `Global.asax`
+
+### **Controllers**
+Located in `Controllers/` folder:
+- `ParticipantController.cs` - Participant management
+- `TeamController.cs` - Team operations
+- `DashboardController.cs` - Dashboard & statistics
+
+### **Views**
+Located in `Views/` folder:
+- `Dashboard/Index.html` - Main dashboard
+- `Participant/Index.html` - Participants list
+- `Team/Index.html` - Teams list
+
+---
+
+## 📊 API Endpoints
+
+### **Participant Endpoints**
+```
+GET    /Participant/Index              - View all participants
+POST   /Participant/Register           - Register new participant
+GET    /Participant/Details/{id}       - Get participant details
+GET    /Participant/GetAllSkills       - Get all skills
+GET    /Participant/GetCategories      - Get skill categories
+```
+
+### **Team Endpoints**
+```
+GET    /Team/Index                     - View all teams
+POST   /Team/CreateTeam                - Create new team
+POST   /Team/RunClustering             - Run clustering algorithm
+POST   /Team/MoveParticipant           - Move participant between teams
+POST   /Team/LockTeam                  - Lock a team
+POST   /Team/UnlockTeam                - Unlock a team
+GET    /Team/AuditLogs                 - View audit logs
+```
+
+### **Dashboard Endpoints**
+```
+GET    /Dashboard/Index                - Dashboard home
+GET    /Dashboard/FilterBySkill        - Filter participants by skill
+GET    /Dashboard/ExportParticipants   - Export participants CSV
+GET    /Dashboard/ExportTeams          - Export teams CSV
+GET    /Dashboard/ExportAuditLog       - Export audit log CSV
+GET    /Dashboard/GetStats             - Get statistics JSON
+```
+
+---
+
+## 🎯 Quick Start Workflow
+
+1. **Open Dashboard**
+   - Navigate to `http://localhost:5000`
+
+2. **Register Participants**
+   - Click "+ Register Participant"
+   - Fill in name, email, select skills
+   - Click Register
+
+3. **Run Clustering**
+   - Click "🔄 Run Clustering"
+   - Set team size (e.g., 4)
+   - Click "Run Clustering"
+   - Wait for algorithm to complete
+
+4. **View Teams**
+   - Click "👥 View Teams"
+   - See auto-generated teams
+   - Verify skill balance
+
+5. **Manage Teams**
+   - Lock teams to finalize
+   - View audit trail
+   - Export data for reporting
+
+6. **Export Results**
+   - Click "📥 Export Participants"
+   - Click "📥 Export Teams"
+   - Download CSV files
+
+---
+
+## 🐛 Troubleshooting
+
+### **Issue: Port already in use**
+```sh
+# Use different port
+dotnet run --urls="http://localhost:5001"
+```
+
+### **Issue: Build errors**
+```sh
+# Clean and rebuild
+dotnet clean
+dotnet restore
+dotnet build
+dotnet run
+```
+
+### **Issue: CSS/JS not loading**
+- Make sure `wwwroot` folder exists
+- Place static files in `wwwroot/css`, `wwwroot/js`
+
+### **Issue: Data not persisting**
+- Current implementation uses in-memory storage
+- Add Entity Framework + Database for persistence
+
+---
+
+## 📝 File Structure
+
+```
+TeamWeave/
+├── Controllers/
+│   ├── ParticipantController.cs
+│   ├── TeamController.cs
+│   └── DashboardController.cs
+├── Views/
+│   ├── Dashboard/
+│   │   └── Index.html
+│   ├── Participant/
+│   │   └── Index.html
+│   └── Team/
+│       └── Index.html
+├── Models/
+│   ├── Participant.cs
+│   ├── Team.cs
+│   └── ...
+├── Services/
+│   ├── ParticipantService.cs
+│   ├── TeamService.cs
+│   ├── ClusteringService.cs
+│   └── SkillVectorEncoder.cs
+├── Utilities/
+│   ├── SkillRepository.cs
+│   └── DataExporter.cs
+├── Web.config
+├── Global.asax
+└── TeamWeave.csproj
+```
+
+---
+
+## 🚀 Running Now
+
+```sh
+cd C:\Users\aryan\source\repos\TeamWeave
+dotnet build
+dotnet run
+```
+
+Then visit: **http://localhost:5000**
+
+---
+
+## 📞 Next Steps
+
+1. ✅ Build and run the web app
+2. ✅ Test all features through browser
+3. ✅ Add database integration (Entity Framework)
+4. ✅ Deploy to IIS or Azure
+5. ✅ Add authentication/authorization
+
+---
+
+**Enjoy your browser-ready TeamWeave! 🎉**
+

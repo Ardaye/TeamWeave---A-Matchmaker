@@ -1,0 +1,288 @@
+﻿@model System.Collections.Generic.List<TeamWeave.Models.Participant>
+
+@{
+    ViewBag.Title = "Participants";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Participants - TeamWeave</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .participant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .participant-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .participant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .participant-name {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .participant-email {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+
+        .skills {
+            margin-top: 15px;
+        }
+
+        .skill-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .skill-info {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .no-participants {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            color: #999;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👥 Participants</h1>
+            <div>
+                <button class="btn btn-primary" onclick="location.href='/Dashboard/Index'">← Back to Dashboard</button>
+            </div>
+        </header>
+
+        <div class="filter-section">
+            <h3>Filter by Skill Category</h3>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterParticipants('')">All</button>
+                <button class="filter-btn" onclick="filterParticipants('Frontend')">Frontend</button>
+                <button class="filter-btn" onclick="filterParticipants('Backend')">Backend</button>
+                <button class="filter-btn" onclick="filterParticipants('Data')">Data</button>
+                <button class="filter-btn" onclick="filterParticipants('Design')">Design</button>
+                <button class="filter-btn" onclick="filterParticipants('DevOps')">DevOps</button>
+            </div>
+        </div>
+
+        @if (Model == null || Model.Count == 0)
+        {
+            <div class="no-participants">
+                <h2>No Participants Yet</h2>
+                <p>Register participants from the dashboard to get started.</p>
+                <button class="btn btn-primary" onclick="location.href='/Dashboard/Index'" style="margin-top: 20px;">Go to Dashboard</button>
+            </div>
+        }
+        else
+        {
+            <div class="participant-grid">
+                @foreach (var participant in Model)
+                {
+                    <div class="participant-card">
+                        <div class="participant-name">@participant.Name</div>
+                        <div class="participant-email">✉️ @participant.Email</div>
+                        <div style="color: #999; font-size: 0.9em; margin-bottom: 10px;">
+                            Status: <strong>@participant.ProfileStatus</strong>
+                        </div>
+
+                        @if (participant.Skills != null && participant.Skills.Count > 0)
+                        {
+                            <div class="skills">
+                                <strong style="color: #333;">Skills:</strong>
+                                @foreach (var skill in participant.Skills)
+                                {
+                                    <div>
+                                        <span class="skill-badge">@skill.Skill.Name</span>
+                                        <span class="skill-info">
+                                            @for (int i = 0; i < skill.ProficiencyLevel; i++)
+                                            {
+                                                <text>⭐</text>
+                                            }
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (participant.Interests != null && participant.Interests.Count > 0)
+                        {
+                            <div style="margin-top: 10px;">
+                                <strong style="color: #333; font-size: 0.95em;">Interests:</strong>
+                                <div>
+                                    @foreach (var interest in participant.Interests)
+                                    {
+                                        <span class="skill-badge" style="background: #48bb78;">@interest</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div style="margin-top: 15px; font-size: 0.85em; color: #999;">
+                            Joined: @participant.CreatedAt.ToString("MMM dd, yyyy")
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <footer>
+        <p>&copy; 2024 TeamWeave | Total Participants: @(Model?.Count ?? 0)</p>
+    </footer>
+
+    <script>
+        function filterParticipants(category) {
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (!category) {
+                // Show all
+                document.querySelectorAll('.participant-card').forEach(card => {
+                    card.style.display = 'block';
+                });
+            } else {
+                // Filter by category
+                fetch(`/Participant/GetSkillsByCategory?category=${category}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        // Implementation depends on API structure
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

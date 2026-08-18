@@ -1,0 +1,148 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Web.Mvc;
+using TeamWeave.Models;
+using TeamWeave.Services;
+
+namespace TeamWeave.Controllers
+{
+    public class TeamController : Controller
+    {
+        private static TeamService _teamService = new TeamService();
+        private static ClusteringService _clusteringService = new ClusteringService();
+        private static ParticipantService _participantService = new ParticipantService();
+
+        // GET: Team
+        public ActionResult Index()
+        {
+            var teams = _teamService.GetAllTeams();
+            return View(teams);
+        }
+
+        // POST: Team/CreateTeam
+        [HttpPost]
+        public ActionResult CreateTeam(string teamName, int eventId)
+        {
+            try
+            {
+                var team = _teamService.CreateTeam(teamName, eventId);
+                return Json(new { success = true, message = "Team created successfully", teamId = team.Id });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Team/RunClustering
+        [HttpPost]
+        public ActionResult RunClustering(int teamSize, int eventId)
+        {
+            try
+            {
+                var participants = _participantService.GetAllParticipants();
+
+                if (participants.Count == 0)
+                {
+                    return Json(new { success = false, message = "No participants found" });
+                }
+
+                // Run clustering
+                var clusteredTeams = _clusteringService.ClusterParticipants(participants, teamSize);
+
+                // Create teams from clusters
+                var createdTeams = new List<Team>();
+                int teamCounter = 1;
+
+                foreach (var cluster in clusteredTeams)
+                {
+                    var team = _teamService.CreateTeam($"Team {teamCounter}", eventId);
+                    foreach (var participant in cluster)
+                    {
+                        _teamService.AddParticipantToTeam(team.Id, participant);
+                    }
+                    createdTeams.Add(team);
+                    teamCounter++;
+                }
+
+                return Json(new 
+                { 
+                    success = true, 
+                    message = $"Created {createdTeams.Count} teams successfully",
+                    teamCount = createdTeams.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Team/MoveParticipant
+        [HttpPost]
+        public ActionResult MoveParticipant(int participantId, int fromTeamId, int toTeamId)
+        {
+            try
+            {
+                _teamService.MoveParticipantBetweenTeams(participantId, fromTeamId, toTeamId);
+                return Json(new { success = true, message = "Participant moved successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Team/LockTeam
+        [HttpPost]
+        public ActionResult LockTeam(int teamId, string actor)
+        {
+            try
+            {
+                _teamService.LockTeam(teamId, actor);
+                return Json(new { success = true, message = "Team locked successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Team/UnlockTeam
+        [HttpPost]
+        public ActionResult UnlockTeam(int teamId, string actor)
+        {
+            try
+            {
+                _teamService.UnlockTeam(teamId, actor);
+                return Json(new { success = true, message = "Team unlocked successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Team/Details/5
+        public ActionResult Details(int id)
+        {
+            var team = _teamService.GetTeamById(id);
+            if (team == null)
+                return HttpNotFound();
+
+            return View(team);
+        }
+
+        // GET: Team/AuditLogs
+        public ActionResult AuditLogs(int? teamId)
+        {
+            List<AuditLog> logs;
+            if (teamId.HasValue)
+                logs = _teamService.GetAuditLogsForTeam(teamId.Value);
+            else
+                logs = _teamService.GetAuditLogs();
+
+            return View(logs);
+        }
+    }
+}

@@ -1,0 +1,193 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TeamWeave.Models;
+using TeamWeave.Services;
+using TeamWeave.Utilities;
+
+namespace TeamWeave
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("========================================");
+            Console.WriteLine("   TeamWeave - Hackathon Team Matcher   ");
+            Console.WriteLine("========================================\n");
+
+            try
+            {
+                // Initialize services
+                var participantService = new ParticipantService();
+                var teamService = new TeamService();
+                var clusteringService = new ClusteringService();
+
+                // Demo: Register participants
+                Console.WriteLine("[1] Registering Participants...\n");
+                var participants = RegisterDemoParticipants(participantService);
+                Console.WriteLine($"✓ Registered {participants.Count} participants\n");
+
+                // Display participant information
+                Console.WriteLine("[2] Participant Skills Overview:\n");
+                DisplayParticipantSkills(participants);
+
+                // Demo: Run clustering algorithm
+                Console.WriteLine("\n[3] Running Clustering Algorithm...\n");
+                int teamSize = 4;
+                var teamClusters = clusteringService.ClusterParticipants(participants, teamSize);
+                Console.WriteLine($"✓ Generated {teamClusters.Count} teams (target team size: {teamSize})\n");
+
+                // Demo: Organize teams and lock them
+                Console.WriteLine("[4] Creating and Organizing Teams...\n");
+                var createdTeams = CreateTeamsFromClusters(teamService, teamClusters);
+                Console.WriteLine($"✓ Created {createdTeams.Count} teams\n");
+
+                // Display team composition
+                Console.WriteLine("[5] Team Composition:\n");
+                DisplayTeamComposition(createdTeams);
+
+                // Demo: Manual adjustment (move a participant)
+                Console.WriteLine("\n[6] Manual Team Adjustment...\n");
+                if (createdTeams.Count >= 2 && createdTeams[0].Members.Count > 0)
+                {
+                    var participantToMove = createdTeams[0].Members.First().ParticipantId;
+                    Console.WriteLine($"Moving Participant {participantToMove} from Team {createdTeams[0].Id} to Team {createdTeams[1].Id}...");
+                    teamService.MoveParticipantBetweenTeams(participantToMove, createdTeams[0].Id, createdTeams[1].Id);
+                    Console.WriteLine("✓ Move completed\n");
+                }
+
+                // Demo: Lock a team
+                Console.WriteLine("[7] Locking Final Teams...\n");
+                foreach (var team in createdTeams)
+                {
+                    teamService.LockTeam(team.Id, "Organizer");
+                    Console.WriteLine($"✓ Team '{team.Name}' is now locked");
+                }
+
+                // Display audit logs
+                Console.WriteLine("\n[8] Audit Trail:\n");
+                var auditLogs = teamService.GetAuditLogs();
+                foreach (var log in auditLogs.TakeLast(5))
+                {
+                    Console.WriteLine($"[{log.Timestamp:HH:mm:ss}] {log.ChangeType} | Actor: {log.Actor} | Old: {log.OldValue} → New: {log.NewValue}");
+                }
+
+                // Export data
+                Console.WriteLine("\n[9] Exporting Data...\n");
+                var participantCsv = DataExporter.ExportParticipantsToCSV(participants);
+                var teamCsv = DataExporter.ExportTeamsToCSV(createdTeams);
+                Console.WriteLine("✓ Data export ready (participants and teams CSV)");
+
+                Console.WriteLine("\n========================================");
+                Console.WriteLine("   Demo Completed Successfully!          ");
+                Console.WriteLine("========================================");
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.ResetColor();
+            }
+
+            Console.WriteLine("\nPress any key to exit...");
+            Console.ReadKey();
+        }
+
+        private static List<Participant> RegisterDemoParticipants(ParticipantService service)
+        {
+            var participants = new List<Participant>();
+
+            // Participant 1: Frontend specialist
+            var p1 = service.RegisterParticipant("Alice Johnson", "alice@example.com", new List<string> { "React", "JavaScript" });
+            service.AddSkillToParticipant(p1.Id, SkillRepository.GetSkillByName("React"), 5);
+            service.AddSkillToParticipant(p1.Id, SkillRepository.GetSkillByName("JavaScript"), 4);
+            service.AddInterestsToParticipant(p1.Id, new List<string> { "Web Applications", "UI/UX" });
+            participants.Add(p1);
+
+            // Participant 2: Backend specialist
+            var p2 = service.RegisterParticipant("Bob Smith", "bob@example.com", new List<string> { "C#", "Python" });
+            service.AddSkillToParticipant(p2.Id, SkillRepository.GetSkillByName("C#"), 5);
+            service.AddSkillToParticipant(p2.Id, SkillRepository.GetSkillByName("Python"), 3);
+            service.AddInterestsToParticipant(p2.Id, new List<string> { "APIs", "Databases" });
+            participants.Add(p2);
+
+            // Participant 3: Data specialist
+            var p3 = service.RegisterParticipant("Carol White", "carol@example.com", new List<string> { "Python", "SQL" });
+            service.AddSkillToParticipant(p3.Id, SkillRepository.GetSkillByName("Python"), 4);
+            service.AddSkillToParticipant(p3.Id, SkillRepository.GetSkillByName("SQL"), 5);
+            service.AddInterestsToParticipant(p3.Id, new List<string> { "Machine Learning", "Analytics" });
+            participants.Add(p3);
+
+            // Participant 4: Full-stack developer
+            var p4 = service.RegisterParticipant("David Lee", "david@example.com", new List<string> { "JavaScript", "Node.js" });
+            service.AddSkillToParticipant(p4.Id, SkillRepository.GetSkillByName("JavaScript"), 4);
+            service.AddSkillToParticipant(p4.Id, SkillRepository.GetSkillByName("Node.js"), 4);
+            service.AddInterestsToParticipant(p4.Id, new List<string> { "Web Development" });
+            participants.Add(p4);
+
+            // Participant 5: Designer
+            var p5 = service.RegisterParticipant("Emma Davis", "emma@example.com", new List<string> { "UI/UX Design", "Figma" });
+            service.AddSkillToParticipant(p5.Id, SkillRepository.GetSkillByName("UI/UX Design"), 5);
+            service.AddSkillToParticipant(p5.Id, SkillRepository.GetSkillByName("Figma"), 4);
+            service.AddInterestsToParticipant(p5.Id, new List<string> { "User Experience", "Brand Design" });
+            participants.Add(p5);
+
+            // Participant 6: DevOps specialist
+            var p6 = service.RegisterParticipant("Frank Miller", "frank@example.com", new List<string> { "Docker", "AWS" });
+            service.AddSkillToParticipant(p6.Id, SkillRepository.GetSkillByName("Docker"), 4);
+            service.AddSkillToParticipant(p6.Id, SkillRepository.GetSkillByName("AWS"), 4);
+            service.AddInterestsToParticipant(p6.Id, new List<string> { "Cloud Infrastructure" });
+            participants.Add(p6);
+
+            return participants;
+        }
+
+        private static void DisplayParticipantSkills(List<Participant> participants)
+        {
+            foreach (var participant in participants)
+            {
+                Console.Write($"{participant.Id}. {participant.Name,-20} | Skills: ");
+                var skills = string.Join(", ", participant.Skills.Select(ps => $"{ps.Skill.Name}({ps.ProficiencyLevel})"));
+                Console.WriteLine(skills);
+            }
+        }
+
+        private static List<Team> CreateTeamsFromClusters(TeamService service, List<List<Participant>> clusters)
+        {
+            var teams = new List<Team>();
+            int teamCounter = 1;
+
+            foreach (var cluster in clusters)
+            {
+                var team = service.CreateTeam($"Team {teamCounter}", 1);
+                foreach (var participant in cluster)
+                {
+                    service.AddParticipantToTeam(team.Id, participant);
+                }
+                teams.Add(team);
+                teamCounter++;
+            }
+
+            return teams;
+        }
+
+        private static void DisplayTeamComposition(List<Team> teams)
+        {
+            foreach (var team in teams)
+            {
+                Console.WriteLine($"Team {team.Id}: {team.Name}");
+                foreach (var member in team.Members)
+                {
+                    var skillCategories = string.Join(", ",
+                        member.Participant.Skills
+                            .Select(ps => ps.Skill.Category)
+                            .Distinct());
+                    Console.WriteLine($"  → {member.Participant.Name,-20} | Categories: {skillCategories}");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+}

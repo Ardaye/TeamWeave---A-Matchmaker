@@ -1,0 +1,8 @@
+C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.csproj.AssemblyReference.cache
+C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.csproj.CoreCompileInputs.cache
+C:\Users\aryan\source\repos\TeamWeave\bin\Debug\TeamWeave.exe.config
+C:\Users\aryan\source\repos\TeamWeave\bin\Debug\TeamWeave.exe
+C:\Users\aryan\source\repos\TeamWeave\bin\Debug\TeamWeave.pdb
+C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.exe
+C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.pdb
+C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.exe.config
