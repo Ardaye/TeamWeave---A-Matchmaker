@@ -532,3 +532,12 @@ TeamWeave provides:
 **Built with ?? for seamless hackathon team formation**
 
 **Status: ? PRODUCTION READY**
+
+Work compiled with contributors:
+Aryan Amar
+Anshika Garg
+Divyakiran Sahoo
+Sephali Simron
+Bhavna Rathi
+Yashwardhan Sandilya
+Srishti Kashyap
