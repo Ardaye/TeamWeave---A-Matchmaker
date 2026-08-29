@@ -3,12 +3,24 @@ import { Team } from '../Models/Team.js';
 import { ClusteringRun } from '../Models/ClusteringRun.js';
 import { AuditLog } from '../Models/AuditLog.js';
 
+/**
+ * URL of the Python FastAPI matchmaking microservice.
+ * Set PYTHON_MATCHMAKER_URL in your environment to enable it.
+ * Falls back to the built-in JS K-Means when unset or unreachable.
+ *
+ * Example .env entry:
+ *   PYTHON_MATCHMAKER_URL=http://localhost:8000
+ */
+const PYTHON_MATCHMAKER_URL = process.env.PYTHON_MATCHMAKER_URL || null;
+
 export class ClusteringService {
   /**
    * Performs K-Means clustering on participant skill vectors.
-   * @param {Array} participants 
-   * @param {number} teamSize 
-   * @param {number} maxIterations 
+   * Used as the local fallback when the Python microservice is unavailable.
+   *
+   * @param {Array} participants
+   * @param {number} teamSize
+   * @param {number} maxIterations
    * @returns {Array<Array<Object>>} Array of team clusters
    */
   static clusterParticipants(participants, teamSize = 4, maxIterations = 100) {
@@ -25,7 +37,7 @@ export class ClusteringService {
     }
 
     // Convert participants to vectors
-    const participantVectors = participants.map(p => 
+    const participantVectors = participants.map(p =>
       SkillVectorEncoder.encodeParticipantSkills(p.skills || [], skillIndex)
     );
 
@@ -103,6 +115,66 @@ export class ClusteringService {
   }
 
   /**
+   * Calls the Python FastAPI matchmaking microservice (app.py).
+   *
+   * The Python service accepts the same MongoDB Participant shape used
+   * internally, mapped as:
+   *   user_id  ← participant._id.toString()
+   *   name     ← participant.name
+   *   email    ← participant.email
+   *   skills   ← participant.skills (array of { skillName, category, proficiencyLevel })
+   *
+   * Returns an array of participant arrays (same shape as clusterParticipants),
+   * or null if the service is unreachable so the caller can fall back.
+   *
+   * @param {Array} participants  MongoDB Participant documents
+   * @param {Map}   idMap         Map from user_id string → Participant document
+   * @returns {Array<Array<Object>>|null}
+   */
+  static async _callPythonMatchmaker(participants, idMap) {
+    const payload = participants.map(p => ({
+      user_id: p._id.toString(),
+      name: p.name,
+      email: p.email || '',
+      skills: (p.skills || []).map(s => ({
+        skillName: s.skillName,
+        category: s.category,
+        proficiencyLevel: s.proficiencyLevel ?? 3,
+      })),
+    }));
+
+    const url = `${PYTHON_MATCHMAKER_URL}/matchmake`;
+    console.log(`[ClusteringService] Calling Python matchmaker at ${url} …`);
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(10_000), // 10 s timeout
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Python matchmaker responded ${response.status}: ${err}`);
+      }
+
+      const data = await response.json();
+
+      // Reconstruct participant arrays from the returned user_ids
+      return data.teams.map(team =>
+        team.user_ids.map(uid => idMap.get(uid)).filter(Boolean)
+      );
+    } catch (err) {
+      console.warn(
+        `[ClusteringService] Python matchmaker unavailable (${err.message}). ` +
+        'Falling back to JS K-Means.'
+      );
+      return null;
+    }
+  }
+
+  /**
    * Helper to ensure no single cluster exceeds teamSize or stays empty.
    */
   static _balanceClusterSizes(clusters, teamSize) {
@@ -125,12 +197,36 @@ export class ClusteringService {
   /**
    * Runs the full clustering pipeline, wipes unfinalized/draft teams,
    * creates new Team documents, and records a ClusteringRun in MongoDB.
+   *
+   * Strategy:
+   *   1. If PYTHON_MATCHMAKER_URL is set, delegate to the Python
+   *      microservice (role-stratified round-robin + Jaccard swap).
+   *   2. Otherwise fall back to the local JS K-Means implementation.
    */
   static async executeAndPersistClustering(participants, teamSize = 4, eventId = 1) {
     const startTime = Date.now();
 
-    // 1. Run clustering algorithm
-    const clusters = this.clusterParticipants(participants, teamSize);
+    // Build a lookup map for reconstructing Participant docs from user_id strings
+    const idMap = new Map(participants.map(p => [p._id.toString(), p]));
+
+    // 1. Choose algorithm: Python microservice or local K-Means fallback
+    let clusters = null;
+    let algorithmUsed = 'KMeans_SkillVector';
+
+    if (PYTHON_MATCHMAKER_URL) {
+      clusters = await this._callPythonMatchmaker(participants, idMap);
+      if (clusters) {
+        algorithmUsed = 'RoleStratifiedRoundRobin+JaccardSwap';
+        console.log(
+          `[ClusteringService] Python matchmaker returned ${clusters.length} teams.`
+        );
+      }
+    }
+
+    // Fallback to local K-Means if Python service was not used / unreachable
+    if (!clusters) {
+      clusters = this.clusterParticipants(participants, teamSize);
+    }
 
     // 2. Remove previous unlocked/draft teams for this event
     await Team.deleteMany({ eventId, isLocked: false });
@@ -169,7 +265,7 @@ export class ClusteringService {
       parameters: {
         targetTeamSize: teamSize,
         maxIterations: 100,
-        algorithm: 'KMeans_SkillVector',
+        algorithm: algorithmUsed,
       },
       teamIds: createdTeams.map(t => t._id),
       status: 'Completed',
@@ -181,7 +277,7 @@ export class ClusteringService {
     await AuditLog.create({
       changeType: 'ClusteringExecuted',
       actor: 'Organizer',
-      details: `Generated ${createdTeams.length} teams with target team size ${teamSize} in ${durationMs}ms`,
+      details: `Generated ${createdTeams.length} teams via ${algorithmUsed} in ${durationMs}ms`,
     });
 
     return {
