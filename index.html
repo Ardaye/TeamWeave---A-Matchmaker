@@ -2,10 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeamWeave - Hackathon Team Matcher</title>
+    <title>TeamWeave - Hackathon Team Matcher (MongoDB Powered)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --secondary: #06b6d4;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --warning: #f59e0b;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-border: rgba(226, 232, 240, 0.8);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,11 +32,16 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
             min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            padding: 24px;
+            color: var(--text-main);
+        }
+
+        h1, h2, h3, .nav-btn, .stat-card h3 {
+            font-family: 'Outfit', sans-serif;
         }
 
         .container {
@@ -26,173 +50,322 @@
         }
 
         header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            text-align: center;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--card-border);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
         }
 
         header h1 {
-            color: #667eea;
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            color: var(--primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .db-badge {
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #86efac;
+        }
+
+        .db-badge::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
         header p {
-            color: #666;
-            font-size: 1.1em;
+            color: var(--text-muted);
+            font-size: 1.05rem;
         }
 
         .nav-tabs {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 24px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         .nav-btn {
-            padding: 12px 24px;
-            border: 2px solid #667eea;
+            padding: 10px 22px;
+            border: 1.5px solid var(--primary);
             background: white;
-            color: #667eea;
-            border-radius: 25px;
+            color: var(--primary);
+            border-radius: 30px;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            font-size: 0.95rem;
         }
 
         .nav-btn.active {
-            background: #667eea;
+            background: var(--primary);
             color: white;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
         }
 
-        .nav-btn:hover {
+        .nav-btn:hover:not(.active) {
+            background: var(--primary-light);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .content {
             display: none;
+            animation: fadeIn 0.3s ease;
         }
 
         .content.active {
             display: block;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .section {
-            background: white;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            margin-bottom: 24px;
+            border: 1px solid var(--card-border);
         }
 
         .section h2 {
-            color: #667eea;
+            color: var(--primary);
             margin-bottom: 20px;
-            font-size: 1.8em;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
-            padding: 25px;
-            border-radius: 10px;
+            padding: 24px;
+            border-radius: 14px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
         }
 
         .stat-card h3 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 6px;
         }
 
         .stat-card p {
-            font-size: 0.95em;
+            font-size: 0.9rem;
             opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
         }
 
         .actions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 14px;
+            margin-bottom: 24px;
         }
 
         button {
             padding: 12px 20px;
             border: none;
-            border-radius: 8px;
-            font-size: 1em;
+            border-radius: 10px;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: #667eea;
+            background: var(--primary);
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: var(--primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
 
         .btn-success {
-            background: #48bb78;
+            background: var(--accent);
             color: white;
         }
 
         .btn-success:hover {
-            background: #38a169;
+            background: var(--accent-hover);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .btn-danger {
-            background: #f56565;
+            background: var(--danger);
             color: white;
         }
 
         .btn-danger:hover {
-            background: #e53e3e;
+            background: var(--danger-hover);
             transform: translateY(-2px);
         }
 
-        .btn-info {
-            background: #4299e1;
-            color: white;
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
         }
 
-        .btn-info:hover {
-            background: #3182ce;
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-outline {
+            border: 1.5px solid #cbd5e1;
+            background: white;
+            color: #475569;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
+        }
+
+        .card h3 {
+            color: #1e293b;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        .badge-skill {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid #c7d2fe;
+        }
+
+        .badge-locked {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .badge-status {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-category {
+            background: #f1f5f9;
+            color: #475569;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: bold;
+            margin-bottom: 6px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         input[type="text"],
@@ -200,141 +373,75 @@
         input[type="number"],
         select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
+            padding: 10px 14px;
+            border: 1.5px solid #cbd5e1;
             border-radius: 8px;
-            font-size: 1em;
+            font-size: 0.95rem;
             font-family: inherit;
-            transition: border-color 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="number"]:focus,
-        select:focus {
+        input:focus, select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
         }
 
         .checkbox-group {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
         }
 
         .checkbox-item {
             display: flex;
             align-items: center;
+            font-size: 0.85rem;
         }
 
         .checkbox-item input[type="checkbox"] {
-            margin-right: 8px;
-            width: 18px;
-            height: 18px;
+            margin-right: 6px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
-        }
-
-        .checkbox-item label {
-            margin: 0;
-            cursor: pointer;
-            font-weight: normal;
+            accent-color: var(--primary);
         }
 
         .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
+            padding: 14px 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
             display: none;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             animation: slideIn 0.3s ease;
-        }
-
-        .alert-success {
-            background: #c6efce;
-            color: #270;
-            border-left: 4px solid #48bb78;
-        }
-
-        .alert-error {
-            background: #fcc;
-            color: #c00;
-            border-left: 4px solid #f56565;
         }
 
         .alert.show {
             display: block;
         }
 
-        @@keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        .alert-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+        .alert-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
         }
 
-        .card {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: #667eea;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-        }
-
-        .card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9em;
-            color: #999;
-            margin-bottom: 15px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-
-        .badge-skill {
-            background: #667eea;
-            color: white;
-        }
-
-        .badge-locked {
-            background: #f6ad55;
-            color: white;
-        }
-
-        .badge-status {
-            background: #48bb78;
-            color: white;
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal {
@@ -345,8 +452,8 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
         }
 
         .modal.show {
@@ -355,31 +462,19 @@
             align-items: center;
         }
 
-        @@keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         .modal-content {
-            background-color: white;
+            background: white;
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 18px;
             width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            position: relative;
-            animation: slideInUp 0.3s ease;
+            max-width: 520px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.25s ease;
         }
 
-        @@keyframes slideInUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         .modal-header {
@@ -387,121 +482,111 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 15px;
+            border-bottom: 1.5px solid #e2e8f0;
+            padding-bottom: 12px;
         }
 
         .modal-header h2 {
-            color: #667eea;
+            color: var(--primary);
+            font-size: 1.35rem;
+            border: none;
+            padding: 0;
             margin: 0;
         }
 
         .close {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
-            color: #999;
+            color: #94a3b8;
             cursor: pointer;
-            transition: color 0.3s ease;
         }
 
         .close:hover {
-            color: #333;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            display: none;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @@keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .table thead {
-            background: #f7fafc;
-        }
-
-        .table th,
-        .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .table th {
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .table tbody tr:hover {
-            background: #f7fafc;
-        }
-
-        footer {
-            text-align: center;
-            color: white;
-            padding: 20px;
-            margin-top: 40px;
+            color: #1e293b;
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #999;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
         }
 
-        .empty-state h3 {
-            color: #667eea;
-            margin-bottom: 10px;
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
         }
 
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.8em;
-            }
+        .table th, .table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
 
-            .nav-tabs {
-                gap: 5px;
-            }
+        .table th {
+            background: #f8fafc;
+            color: var(--primary);
+            font-weight: 600;
+        }
 
-            .nav-btn {
-                padding: 8px 16px;
-                font-size: 0.9em;
-            }
+        .table tr:hover td {
+            background: #f8fafc;
+        }
 
-            .section {
-                padding: 20px;
-            }
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
 
-            .grid {
-                grid-template-columns: 1fr;
-            }
+        .filter-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #475569;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .member-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>TeamWeave</h1>
-            <p>Hackathon Team Matcher Portal</p>
+            <div class="header-top">
+                <h1>TeamWeave</h1>
+                <span class="db-badge">MongoDB Connected</span>
+            </div>
+            <p>Intelligent Hackathon Team Formation & Skill Clustering Engine</p>
             <div class="nav-tabs">
                 <button class="nav-btn active" onclick="switchTab('dashboard')">Dashboard</button>
                 <button class="nav-btn" onclick="switchTab('participants')">Participants</button>
@@ -515,22 +600,22 @@
         <!-- Dashboard Tab -->
         <div id="dashboard" class="content active">
             <div class="section">
-                <h2>Statistics</h2>
+                <h2>Portal Overview</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <h3 id="statParticipants">0</h3>
+                        <h3 id="statParticipants">-</h3>
                         <p>Total Participants</p>
                     </div>
                     <div class="stat-card">
-                        <h3 id="statTeams">0</h3>
+                        <h3 id="statTeams">-</h3>
                         <p>Total Teams</p>
                     </div>
                     <div class="stat-card">
-                        <h3 id="statSkills">25+</h3>
+                        <h3 id="statSkills">24</h3>
                         <p>Available Skills</p>
                     </div>
                     <div class="stat-card">
-                        <h3 id="statAvgTeamSize">0</h3>
+                        <h3 id="statAvgTeamSize">-</h3>
                         <p>Avg Team Size</p>
                     </div>
                 </div>
@@ -540,29 +625,23 @@
                 <h2>Quick Actions</h2>
                 <div class="actions">
                     <button class="btn-primary" onclick="openRegisterModal()">+ Register Participant</button>
-                    <button class="btn-success" onclick="openClusteringModal()">Run Clustering</button>
-                    <button class="btn-info" onclick="exportParticipants()">Export Participants</button>
-                    <button class="btn-info" onclick="exportTeams()">Export Teams</button>
+                    <button class="btn-success" onclick="openClusteringModal()">⚡ Run K-Means Clustering</button>
+                    <button class="btn-outline" onclick="exportData('participants')">📥 Export Participants (CSV)</button>
+                    <button class="btn-outline" onclick="exportData('teams')">📥 Export Teams (CSV)</button>
                 </div>
             </div>
 
             <div class="section">
                 <h2>Recent Participants</h2>
                 <div id="recentParticipants" class="grid">
-                    <div class="empty-state">
-                        <h3>No participants yet</h3>
-                        <p>Register participants to get started</p>
-                    </div>
+                    <div class="empty-state">Loading participants...</div>
                 </div>
             </div>
 
             <div class="section">
-                <h2>Recent Teams</h2>
+                <h2>Formed Teams</h2>
                 <div id="recentTeams" class="grid">
-                    <div class="empty-state">
-                        <h3>No teams created</h3>
-                        <p>Run clustering algorithm to create teams</p>
-                    </div>
+                    <div class="empty-state">No teams generated yet. Run the clustering algorithm above.</div>
                 </div>
             </div>
         </div>
@@ -570,23 +649,21 @@
         <!-- Participants Tab -->
         <div id="participants" class="content">
             <div class="section">
-                <h2>All Participants</h2>
-                <div class="form-group">
-                    <label>Filter by Skill Category:</label>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                        <button class="btn-primary" onclick="filterParticipants('')" style="padding: 8px 16px; font-size: 0.9em;">All</button>
-                        <button class="btn-primary" onclick="filterParticipants('Frontend')" style="padding: 8px 16px; font-size: 0.9em;">Frontend</button>
-                        <button class="btn-primary" onclick="filterParticipants('Backend')" style="padding: 8px 16px; font-size: 0.9em;">Backend</button>
-                        <button class="btn-primary" onclick="filterParticipants('Data')" style="padding: 8px 16px; font-size: 0.9em;">Data</button>
-                        <button class="btn-primary" onclick="filterParticipants('Design')" style="padding: 8px 16px; font-size: 0.9em;">Design</button>
-                        <button class="btn-primary" onclick="filterParticipants('DevOps')" style="padding: 8px 16px; font-size: 0.9em;">DevOps</button>
-                    </div>
+                <h2>
+                    <span>All Participants</span>
+                    <button class="btn-primary" style="font-size: 0.85rem; padding: 8px 16px;" onclick="openRegisterModal()">+ New Participant</button>
+                </h2>
+                <div class="filter-bar">
+                    <span style="font-size: 0.9rem; font-weight: 600; color: #64748b; margin-right: 6px; align-self: center;">Filter:</span>
+                    <button class="filter-btn active" onclick="filterParticipants('', this)">All</button>
+                    <button class="filter-btn" onclick="filterParticipants('Frontend', this)">Frontend</button>
+                    <button class="filter-btn" onclick="filterParticipants('Backend', this)">Backend</button>
+                    <button class="filter-btn" onclick="filterParticipants('Data', this)">Data</button>
+                    <button class="filter-btn" onclick="filterParticipants('Design', this)">Design</button>
+                    <button class="filter-btn" onclick="filterParticipants('DevOps', this)">DevOps</button>
                 </div>
                 <div id="participantsList" class="grid">
-                    <div class="empty-state">
-                        <h3>No participants registered</h3>
-                        <p>Register participants from the Dashboard</p>
-                    </div>
+                    <div class="empty-state">Loading participants from MongoDB...</div>
                 </div>
             </div>
         </div>
@@ -594,12 +671,12 @@
         <!-- Teams Tab -->
         <div id="teams" class="content">
             <div class="section">
-                <h2>All Teams</h2>
+                <h2>
+                    <span>Team Roster & Adjustments</span>
+                    <button class="btn-success" style="font-size: 0.85rem; padding: 8px 16px;" onclick="openClusteringModal()">⚡ Run Clustering</button>
+                </h2>
                 <div id="teamsList" class="grid">
-                    <div class="empty-state">
-                        <h3>No teams created</h3>
-                        <p>Run clustering to automatically form teams</p>
-                    </div>
+                    <div class="empty-state">No teams created. Run clustering to generate balanced teams.</div>
                 </div>
             </div>
         </div>
@@ -607,12 +684,12 @@
         <!-- Audit Trail Tab -->
         <div id="audit" class="content">
             <div class="section">
-                <h2>Audit Trail</h2>
+                <h2>
+                    <span>Audit Trail (Compliance Log)</span>
+                    <button class="btn-outline" style="font-size: 0.85rem; padding: 8px 16px;" onclick="exportData('audit')">📥 Export Audit Log</button>
+                </h2>
                 <div id="auditTable">
-                    <div class="empty-state">
-                        <h3>No audit logs</h3>
-                        <p>Changes will appear here</p>
-                    </div>
+                    <div class="empty-state">Loading audit logs...</div>
                 </div>
             </div>
         </div>
@@ -625,19 +702,23 @@
                 <h2>Register Participant</h2>
                 <span class="close" onclick="closeRegisterModal()">&times;</span>
             </div>
-            <div class="form-group">
-                <label>Name:</label>
-                <input type="text" id="participantName" placeholder="Enter full name">
-            </div>
-            <div class="form-group">
-                <label>Email:</label>
-                <input type="email" id="participantEmail" placeholder="Enter email address">
-            </div>
-            <div class="form-group">
-                <label>Select Skills (at least one):</label>
-                <div id="skillsCheckbox" class="checkbox-group"></div>
-            </div>
-            <button class="btn-success" onclick="registerParticipant()" style="width: 100%;">Register</button>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="participantName" required placeholder="e.g. Ada Lovelace">
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="participantEmail" required placeholder="e.g. ada@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Skills (Select at least one) *</label>
+                    <div id="skillsCheckbox" class="checkbox-group">
+                        <div style="padding: 10px; color: #94a3b8;">Loading skills catalog...</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-success" style="width: 100%; margin-top: 10px;">Register & Save to MongoDB</button>
+            </form>
         </div>
     </div>
 
@@ -645,457 +726,426 @@
     <div id="clusteringModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Run Clustering Algorithm</h2>
+                <h2>Run K-Means Clustering</h2>
                 <span class="close" onclick="closeClusteringModal()">&times;</span>
             </div>
-            <div class="form-group">
-                <label>Team Size:</label>
-                <input type="number" id="teamSize" value="4" min="2" max="10">
+            <form onsubmit="handleClustering(event)">
+                <div class="form-group">
+                    <label>Target Team Size</label>
+                    <input type="number" id="teamSize" value="4" min="2" max="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Event ID</label>
+                    <input type="number" id="eventId" value="1" min="1" required>
+                </div>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">
+                    The clustering algorithm encodes participant skills into normalized vectors and performs K-Means iterations until centroid convergence, guaranteeing skill diversity.
+                </p>
+                <button type="submit" id="clusterSubmitBtn" class="btn-success" style="width: 100%;">Execute Clustering Engine</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Move Participant Modal -->
+    <div id="moveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Rebalance Participant</h2>
+                <span class="close" onclick="closeMoveModal()">&times;</span>
             </div>
-            <div class="form-group">
-                <label>Event ID:</label>
-                <input type="number" id="eventId" value="1" min="1">
-            </div>
-            <div class="loading" id="clusteringLoading">
-                <div class="spinner"></div>
-                <p>Running clustering algorithm...</p>
-            </div>
-            <button class="btn-success" onclick="runClustering()" style="width: 100%; display: none;" id="clusteringBtn">Run Clustering</button>
+            <form onsubmit="handleMoveParticipant(event)">
+                <input type="hidden" id="moveParticipantId">
+                <input type="hidden" id="moveFromTeamId">
+                <div class="form-group">
+                    <label>Participant</label>
+                    <input type="text" id="moveParticipantName" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="form-group">
+                    <label>Current Team</label>
+                    <input type="text" id="moveFromTeamName" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="form-group">
+                    <label>Destination Team *</label>
+                    <select id="moveToTeamSelect" required></select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Transfer Participant</button>
+            </form>
         </div>
     </div>
 
     <footer>
-        <p>&copy; 2024 TeamWeave - Built with ?? for seamless team formation</p>
+        <p>&copy; 2026 TeamWeave - Backed by MongoDB Persistence & K-Means Clustering Engine</p>
     </footer>
 
     <script>
-        // Mock Data Storage
-        let app = {
-            participants: [],
-            teams: [],
-            auditLogs: [],
-            skills: [
-                // Frontend
-                { id: 1, name: 'React', category: 'Frontend' },
-                { id: 2, name: 'Vue.js', category: 'Frontend' },
-                { id: 3, name: 'Angular', category: 'Frontend' },
-                { id: 4, name: 'JavaScript', category: 'Frontend' },
-                { id: 5, name: 'HTML/CSS', category: 'Frontend' },
-                // Backend
-                { id: 6, name: 'C#', category: 'Backend' },
-                { id: 7, name: 'Python', category: 'Backend' },
-                { id: 8, name: 'Java', category: 'Backend' },
-                { id: 9, name: 'Node.js', category: 'Backend' },
-                { id: 10, name: 'PHP', category: 'Backend' },
-                // Data
-                { id: 11, name: 'SQL', category: 'Data' },
-                { id: 12, name: 'Python Data Science', category: 'Data' },
-                { id: 13, name: 'Machine Learning', category: 'Data' },
-                { id: 14, name: 'Data Analysis', category: 'Data' },
-                { id: 15, name: 'Big Data', category: 'Data' },
-                // Design
-                { id: 16, name: 'UI/UX Design', category: 'Design' },
-                { id: 17, name: 'Figma', category: 'Design' },
-                { id: 18, name: 'Graphic Design', category: 'Design' },
-                { id: 19, name: 'Web Design', category: 'Design' },
-                // DevOps
-                { id: 20, name: 'Docker', category: 'DevOps' },
-                { id: 21, name: 'Kubernetes', category: 'DevOps' },
-                { id: 22, name: 'AWS', category: 'DevOps' },
-                { id: 23, name: 'Azure', category: 'DevOps' },
-                { id: 24, name: 'CI/CD', category: 'DevOps' }
-            ]
+        let cachedSkills = [];
+        let allTeamsCache = [];
+
+        window.onload = async function() {
+            await loadSkills();
+            await refreshAllData();
         };
 
-        // Initialize
-        window.onload = function () {
-            initializeSkillsCheckbox();
-            loadData();
-        };
-
-        // Initialize Skills Checkbox
-        function initializeSkillsCheckbox() {
-            const container = document.getElementById('skillsCheckbox');
-            app.skills.forEach(skill => {
-                const div = document.createElement('div');
-                div.className = 'checkbox-item';
-                div.innerHTML = `
-                    <input type="checkbox" id="skill_${skill.id}" name="skills" value="${skill.name}">
-                    <label for="skill_${skill.id}">${skill.name}</label>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // Tab Switching
-        function switchTab(tabName) {
-            // Hide all content
-            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            // Load tab data
-            if (tabName === 'participants') {
-                displayParticipants(app.participants);
-            } else if (tabName === 'teams') {
-                displayTeams(app.teams);
-            } else if (tabName === 'audit') {
-                displayAuditLogs();
+        async function loadSkills() {
+            try {
+                const res = await fetch('/api/skills');
+                cachedSkills = await res.json();
+                const container = document.getElementById('skillsCheckbox');
+                container.innerHTML = cachedSkills.map(skill => `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="skill_${skill._id}" name="skills" value="${skill.name}" data-category="${skill.category}">
+                        <label for="skill_${skill._id}">${skill.name}</label>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load skills:', err);
             }
         }
 
-        // Load Data
-        function loadData() {
-            updateStats();
-            displayRecentParticipants();
-            displayRecentTeams();
+        async function refreshAllData() {
+            await Promise.all([
+                loadStats(),
+                loadRecentParticipants(),
+                loadTeams(),
+                loadAuditLogs()
+            ]);
         }
 
-        // Update Statistics
-        function updateStats() {
-            document.getElementById('statParticipants').textContent = app.participants.length;
-            document.getElementById('statTeams').textContent = app.teams.length;
-            const avgSize = app.teams.length > 0 
-                ? Math.round(app.participants.length / app.teams.length) 
-                : 0;
-            document.getElementById('statAvgTeamSize').textContent = avgSize;
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                document.getElementById('statParticipants').textContent = data.totalParticipants;
+                document.getElementById('statTeams').textContent = data.totalTeams;
+                document.getElementById('statAvgTeamSize').textContent = data.avgTeamSize;
+            } catch (err) {
+                console.error('Failed to load stats:', err);
+            }
         }
 
-        // Register Participant
-        function registerParticipant() {
-            const name = document.getElementById('participantName').value;
-            const email = document.getElementById('participantEmail').value;
-            const skills = Array.from(document.querySelectorAll('input[name="skills"]:checked')).map(cb => cb.value);
+        async function loadRecentParticipants(category = '') {
+            try {
+                const url = category ? `/api/participants?category=${encodeURIComponent(category)}` : '/api/participants';
+                const res = await fetch(url);
+                const participants = await res.json();
 
-            if (!name || !email || skills.length === 0) {
-                showAlert('Please fill all fields and select at least one skill', 'error');
-                return;
+                const recentContainer = document.getElementById('recentParticipants');
+                const listContainer = document.getElementById('participantsList');
+
+                const renderCards = (items) => {
+                    if (!items || items.length === 0) {
+                        return '<div class="empty-state">No participants found in MongoDB.</div>';
+                    }
+                    return items.map(p => `
+                        <div class="card">
+                            <h3>${escapeHtml(p.name)}</h3>
+                            <div class="card-meta">
+                                <span>📧 ${escapeHtml(p.email)}</span>
+                                <span>${p.skills ? p.skills.length : 0} skills</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                ${(p.skills || []).map(s => `
+                                    <span class="badge badge-skill">${escapeHtml(s.skillName)} (${s.proficiencyLevel}★)</span>
+                                `).join('')}
+                            </div>
+                            <small style="color: #94a3b8;">Joined: ${new Date(p.createdAt).toLocaleDateString()}</small>
+                        </div>
+                    `).join('');
+                };
+
+                if (recentContainer) {
+                    recentContainer.innerHTML = renderCards(participants.slice(0, 6));
+                }
+                if (listContainer) {
+                    listContainer.innerHTML = renderCards(participants);
+                }
+            } catch (err) {
+                console.error('Failed to load participants:', err);
             }
-
-            const participant = {
-                id: app.participants.length + 1,
-                name: name,
-                email: email,
-                skills: skills.map(skillName => {
-                    const skill = app.skills.find(s => s.name === skillName);
-                    return { ...skill, proficiency: 3 };
-                }),
-                createdAt: new Date()
-            };
-
-            app.participants.push(participant);
-            addAuditLog(`Participant '${name}' registered`);
-            showAlert(`? ${name} registered successfully!`, 'success');
-            closeRegisterModal();
-            resetRegisterForm();
-            loadData();
         }
 
-        // Run Clustering
-        function runClustering() {
-            const teamSize = parseInt(document.getElementById('teamSize').value);
-            const eventId = parseInt(document.getElementById('eventId').value);
+        async function loadTeams() {
+            try {
+                const res = await fetch('/api/teams');
+                const teams = await res.json();
+                allTeamsCache = teams;
 
-            if (app.participants.length === 0) {
-                showAlert('No participants to cluster', 'error');
-                return;
+                const recentContainer = document.getElementById('recentTeams');
+                const listContainer = document.getElementById('teamsList');
+
+                const renderTeamCards = (items) => {
+                    if (!items || items.length === 0) {
+                        return '<div class="empty-state">No teams created. Click "Run Clustering" to form balanced teams.</div>';
+                    }
+                    return items.map(t => `
+                        <div class="card">
+                            <h3>
+                                <span>${escapeHtml(t.name)}</span>
+                                <span class="badge ${t.isLocked ? 'badge-locked' : 'badge-status'}">
+                                    ${t.isLocked ? '🔒 LOCKED' : '⚡ DRAFT'}
+                                </span>
+                            </h3>
+                            <div class="card-meta">
+                                <span>👥 ${t.members.length} Members</span>
+                                <span>Status: ${t.status}</span>
+                            </div>
+                            <div style="margin: 12px 0;">
+                                ${t.members.map(m => `
+                                    <div class="member-row">
+                                        <div>
+                                            <strong>${escapeHtml(m.name)}</strong>
+                                            <div style="font-size: 0.75rem; color: #64748b;">
+                                                ${(m.skills || []).map(s => s.skillName).join(', ')}
+                                            </div>
+                                        </div>
+                                        ${!t.isLocked ? `
+                                            <button class="btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openMoveModal('${m.participantId}', '${escapeHtml(m.name)}', '${t._id}', '${escapeHtml(t.name)}')">Move</button>
+                                        ` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button class="${t.isLocked ? 'btn-secondary' : 'btn-primary'}" style="width: 100%; font-size: 0.85rem; padding: 8px;" onclick="toggleTeamLock('${t._id}')">
+                                ${t.isLocked ? '🔓 Unlock Team' : '🔒 Lock Team'}
+                            </button>
+                        </div>
+                    `).join('');
+                };
+
+                if (recentContainer) recentContainer.innerHTML = renderTeamCards(teams.slice(0, 3));
+                if (listContainer) listContainer.innerHTML = renderTeamCards(teams);
+            } catch (err) {
+                console.error('Failed to load teams:', err);
             }
+        }
 
-            if (!teamSize || teamSize < 2) {
-                showAlert('Team size must be at least 2', 'error');
-                return;
-            }
+        async function loadAuditLogs() {
+            try {
+                const res = await fetch('/api/audit-logs');
+                const logs = await res.json();
+                const container = document.getElementById('auditTable');
 
-            document.getElementById('clusteringLoading').style.display = 'block';
-            document.getElementById('clusteringBtn').style.display = 'none';
-
-            // Simulate clustering
-            setTimeout(() => {
-                const numTeams = Math.ceil(app.participants.length / teamSize);
-                app.teams = [];
-
-                for (let i = 0; i < numTeams; i++) {
-                    const start = i * teamSize;
-                    const end = Math.min(start + teamSize, app.participants.length);
-                    const members = app.participants.slice(start, end);
-
-                    const team = {
-                        id: app.teams.length + 1,
-                        name: `Team ${i + 1}`,
-                        eventId: eventId,
-                        status: 'Draft',
-                        isLocked: false,
-                        members: members,
-                        createdAt: new Date()
-                    };
-
-                    app.teams.push(team);
+                if (!logs || logs.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No audit logs found.</div>';
+                    return;
                 }
 
-                addAuditLog(`Clustering executed: Created ${numTeams} teams`);
-                showAlert(`? Created ${numTeams} teams successfully!`, 'success');
-                closeClusteringModal();
-                loadData();
-                document.getElementById('clusteringLoading').style.display = 'none';
-                document.getElementById('clusteringBtn').style.display = 'block';
-            }, 1500);
-        }
-
-        // Display Recent Participants
-        function displayRecentParticipants() {
-            const container = document.getElementById('recentParticipants');
-            const recent = app.participants.slice(-3);
-
-            if (recent.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No participants yet</h3><p>Register participants to get started</p></div>';
-                return;
-            }
-
-            container.innerHTML = recent.map(p => `
-                <div class="card">
-                    <h3>${p.name}</h3>
-                    <div class="card-meta">
-                        <span>?? ${p.email}</span>
-                        <span>${p.skills.length} skills</span>
-                    </div>
-                    <div>
-                        ${p.skills.map(s => `<span class="badge badge-skill">${s.name}</span>`).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Display Recent Teams
-        function displayRecentTeams() {
-            const container = document.getElementById('recentTeams');
-            const recent = app.teams.slice(-3);
-
-            if (recent.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No teams created</h3><p>Run clustering algorithm to create teams</p></div>';
-                return;
-            }
-
-            container.innerHTML = recent.map(t => `
-                <div class="card">
-                    <h3>${t.name} ${t.isLocked ? '<span class="badge badge-locked">?? LOCKED</span>' : ''}</h3>
-                    <div class="card-meta">
-                        <span>?? ${t.members.length} members</span>
-                        <span class="badge badge-status">${t.status}</span>
-                    </div>
-                    <small>${t.members.map(m => m.name).join(', ')}</small>
-                </div>
-            `).join('');
-        }
-
-        // Display All Participants
-        function displayParticipants(participants) {
-            const container = document.getElementById('participantsList');
-
-            if (participants.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No participants registered</h3><p>Register participants from the Dashboard</p></div>';
-                return;
-            }
-
-            container.innerHTML = participants.map(p => `
-                <div class="card">
-                    <h3>${p.name}</h3>
-                    <div class="card-meta">
-                        <span>?? ${p.email}</span>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        ${p.skills.map(s => `<span class="badge badge-skill">${s.name} ${s.proficiency}?</span>`).join('')}
-                    </div>
-                    <small style="color: #999;">Registered: ${new Date(p.createdAt).toLocaleDateString()}</small>
-                </div>
-            `).join('');
-        }
-
-        // Filter Participants
-        function filterParticipants(category) {
-            if (!category) {
-                displayParticipants(app.participants);
-                return;
-            }
-
-            const filtered = app.participants.filter(p =>
-                p.skills.some(s => s.category === category)
-            );
-
-            displayParticipants(filtered);
-        }
-
-        // Display All Teams
-        function displayTeams(teams) {
-            const container = document.getElementById('teamsList');
-
-            if (teams.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No teams created</h3><p>Run clustering to automatically form teams</p></div>';
-                return;
-            }
-
-            container.innerHTML = teams.map(t => `
-                <div class="card">
-                    <h3>${t.name} ${t.isLocked ? '<span class="badge badge-locked">?? LOCKED</span>' : ''}</h3>
-                    <div class="card-meta">
-                        <span>?? ${t.members.length} members</span>
-                        <span class="badge badge-status">${t.status}</span>
-                    </div>
-                    <div style="font-size: 0.9em; margin: 10px 0;">
-                        ${t.members.map(m => `
-                            <div style="padding: 8px; background: #f0f0f0; margin-bottom: 5px; border-radius: 5px;">
-                                <strong>${m.name}</strong>
-                                <div style="font-size: 0.85em; color: #666;">
-                                    ${m.skills.map(s => s.name).join(', ')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <button class="btn-primary" onclick="lockTeam(${t.id})" style="width: 100%; margin-top: 10px; padding: 8px;">
-                        ${t.isLocked ? '?? Unlock' : '?? Lock'}
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // Lock Team
-        function lockTeam(teamId) {
-            const team = app.teams.find(t => t.id === teamId);
-            if (team) {
-                team.isLocked = !team.isLocked;
-                team.status = team.isLocked ? 'Locked' : 'Draft';
-                addAuditLog(`Team '${team.name}' ${team.isLocked ? 'locked' : 'unlocked'}`);
-                showAlert(`? Team ${team.isLocked ? 'locked' : 'unlocked'} successfully!`, 'success');
-                displayTeams(app.teams);
-            }
-        }
-
-        // Display Audit Logs
-        function displayAuditLogs() {
-            const container = document.getElementById('auditTable');
-
-            if (app.auditLogs.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No audit logs</h3><p>Changes will appear here</p></div>';
-                return;
-            }
-
-            const html = `
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Event</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${app.auditLogs.map((log, i) => `
+                container.innerHTML = `
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td>${new Date(log.timestamp).toLocaleString()}</td>
-                                <td>${log.event}</td>
-                                <td>${log.details || '-'}</td>
+                                <th>Timestamp</th>
+                                <th>Action Type</th>
+                                <th>Actor</th>
+                                <th>Details</th>
                             </tr>
-                        `).reverse().join('')}
-                    </tbody>
-                </table>
-            `;
-            container.innerHTML = html;
+                        </thead>
+                        <tbody>
+                            ${logs.map(log => `
+                                <tr>
+                                    <td>${new Date(log.timestamp).toLocaleString()}</td>
+                                    <td><span class="badge badge-category">${escapeHtml(log.changeType)}</span></td>
+                                    <td><strong>${escapeHtml(log.actor || 'System')}</strong></td>
+                                    <td>${escapeHtml(log.details || log.newValue || '-')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Failed to load audit logs:', err);
+            }
         }
 
-        // Add Audit Log
-        function addAuditLog(event, details = '') {
-            app.auditLogs.push({
-                timestamp: new Date(),
-                event: event,
-                details: details
-            });
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('participantName').value;
+            const email = document.getElementById('participantEmail').value;
+            const selectedCheckboxes = Array.from(document.querySelectorAll('input[name="skills"]:checked'));
+
+            if (selectedCheckboxes.length === 0) {
+                showAlert('Please select at least one skill.', 'error');
+                return;
+            }
+
+            const skills = selectedCheckboxes.map(cb => ({
+                skillName: cb.value,
+                category: cb.dataset.category || 'Frontend',
+                proficiencyLevel: 4
+            }));
+
+            try {
+                const res = await fetch('/api/participants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, skills })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || 'Failed to register');
+                }
+
+                showAlert(`✅ Registered "${name}" into MongoDB!`, 'success');
+                closeRegisterModal();
+                await refreshAllData();
+            } catch (err) {
+                showAlert(`Error: ${err.message}`, 'error');
+            }
         }
 
-        // Export Functions
-        function exportParticipants() {
-            const csv = 'Name,Email,Skills,Skills Count,Registered\n' +
-                app.participants.map(p => `"${p.name}","${p.email}","${p.skills.map(s => s.name).join('; ')}",${p.skills.length},"${new Date(p.createdAt).toLocaleDateString()}"`).join('\n');
+        async function handleClustering(e) {
+            e.preventDefault();
+            const teamSize = document.getElementById('teamSize').value;
+            const eventId = document.getElementById('eventId').value;
+            const submitBtn = document.getElementById('clusterSubmitBtn');
 
-            downloadCSV(csv, 'participants.csv');
+            submitBtn.textContent = 'Running K-Means Algorithm...';
+            submitBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/clustering/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teamSize, eventId })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || 'Clustering failed');
+                }
+
+                const data = await res.json();
+                showAlert(`🎉 Successfully formed ${data.teams.length} balanced teams in MongoDB!`, 'success');
+                closeClusteringModal();
+                await refreshAllData();
+                switchTab('teams');
+            } catch (err) {
+                showAlert(`Error: ${err.message}`, 'error');
+            } finally {
+                submitBtn.textContent = 'Execute Clustering Engine';
+                submitBtn.disabled = false;
+            }
         }
 
-        function exportTeams() {
-            const csv = 'Team Name,Members,Member Count,Status\n' +
-                app.teams.map(t => `"${t.name}","${t.members.map(m => m.name).join('; ')}",${t.members.length},"${t.status}"`).join('\n');
-
-            downloadCSV(csv, 'teams.csv');
+        async function toggleTeamLock(teamId) {
+            try {
+                const res = await fetch(`/api/teams/${teamId}/lock`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ actor: 'Organizer' })
+                });
+                if (!res.ok) throw new Error('Failed to toggle lock');
+                const team = await res.json();
+                showAlert(`Team "${team.name}" is now ${team.isLocked ? 'Locked 🔒' : 'Draft ⚡'}`, 'success');
+                await refreshAllData();
+            } catch (err) {
+                showAlert(err.message, 'error');
+            }
         }
 
-        function downloadCSV(csv, filename) {
-            const link = document.createElement('a');
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            link.href = url;
-            link.download = filename;
-            link.click();
-            window.URL.revokeObjectURL(url);
-            showAlert(`? ${filename} downloaded!`, 'success');
+        function openMoveModal(participantId, participantName, fromTeamId, fromTeamName) {
+            document.getElementById('moveParticipantId').value = participantId;
+            document.getElementById('moveFromTeamId').value = fromTeamId;
+            document.getElementById('moveParticipantName').value = participantName;
+            document.getElementById('moveFromTeamName').value = fromTeamName;
+
+            const select = document.getElementById('moveToTeamSelect');
+            const otherTeams = allTeamsCache.filter(t => t._id !== fromTeamId && !t.isLocked);
+
+            if (otherTeams.length === 0) {
+                showAlert('No available unlocked destination teams to move to.', 'error');
+                return;
+            }
+
+            select.innerHTML = otherTeams.map(t => `<option value="${t._id}">${escapeHtml(t.name)} (${t.members.length} members)</option>`).join('');
+            document.getElementById('moveModal').classList.add('show');
         }
 
-        // Modal Functions
+        function closeMoveModal() {
+            document.getElementById('moveModal').classList.remove('show');
+        }
+
+        async function handleMoveParticipant(e) {
+            e.preventDefault();
+            const participantId = document.getElementById('moveParticipantId').value;
+            const fromTeamId = document.getElementById('moveFromTeamId').value;
+            const toTeamId = document.getElementById('moveToTeamSelect').value;
+
+            try {
+                const res = await fetch('/api/teams/move', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ participantId, fromTeamId, toTeamId, actor: 'Organizer' })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || 'Failed to move participant');
+                }
+
+                showAlert('✅ Participant moved successfully and logged to MongoDB Audit Trail!', 'success');
+                closeMoveModal();
+                await refreshAllData();
+            } catch (err) {
+                showAlert(err.message, 'error');
+            }
+        }
+
+        function filterParticipants(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            loadRecentParticipants(category);
+        }
+
+        function exportData(type) {
+            window.location.href = `/api/export/${type}`;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            const clickedBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => btn.getAttribute('onclick')?.includes(tabName));
+            if (clickedBtn) clickedBtn.classList.add('active');
+        }
+
         function openRegisterModal() {
             document.getElementById('registerModal').classList.add('show');
         }
 
         function closeRegisterModal() {
             document.getElementById('registerModal').classList.remove('show');
-            resetRegisterForm();
-        }
-
-        function resetRegisterForm() {
             document.getElementById('participantName').value = '';
             document.getElementById('participantEmail').value = '';
             document.querySelectorAll('input[name="skills"]').forEach(cb => cb.checked = false);
         }
 
         function openClusteringModal() {
-            if (app.participants.length === 0) {
-                showAlert('Please register participants first', 'error');
-                return;
-            }
             document.getElementById('clusteringModal').classList.add('show');
-            document.getElementById('clusteringBtn').style.display = 'block';
         }
 
         function closeClusteringModal() {
             document.getElementById('clusteringModal').classList.remove('show');
         }
 
-        // Alert Function
-        function showAlert(message, type) {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.textContent = message;
-            alertBox.className = `alert alert-${type} show`;
-            setTimeout(() => {
-                alertBox.classList.remove('show');
-            }, 4000);
+        function showAlert(msg, type = 'success') {
+            const box = document.getElementById('alertBox');
+            box.textContent = msg;
+            box.className = `alert alert-${type} show`;
+            setTimeout(() => box.classList.remove('show'), 4000);
         }
 
-        // Close modal when clicking outside
-        window.onclick = function (event) {
-            const registerModal = document.getElementById('registerModal');
-            const clusteringModal = document.getElementById('clusteringModal');
-            if (event.target === registerModal) {
-                closeRegisterModal();
-            }
-            if (event.target === clusteringModal) {
-                closeClusteringModal();
-            }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
 
-        // Auto-refresh stats
-        setInterval(() => {
-            if (document.getElementById('dashboard').classList.contains('active')) {
-                updateStats();
-            }
-        }, 10000);
+        window.onclick = function(e) {
+            ['registerModal', 'clusteringModal', 'moveModal'].forEach(id => {
+                const el = document.getElementById(id);
+                if (e.target === el) el.classList.remove('show');
+            });
+        };
     </script>
 </body>
 </html>
