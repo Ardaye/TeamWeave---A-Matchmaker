@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { connectDB } from './config/db.js';
+import { connectDB, disconnectDB } from './config/db.js';
 import { seedDatabase } from './scripts/seed.js';
 import { Skill } from './Models/Skill.js';
 import { ParticipantService } from './Services/ParticipantService.js';
@@ -200,12 +200,24 @@ async function startServer() {
   await connectDB();
   await seedDatabase(false);
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`========================================`);
     console.log(`  TeamWeave Portal running on port ${PORT}`);
     console.log(`  URL: http://localhost:${PORT}`);
     console.log(`========================================`);
   });
+
+  const shutdown = async (signal) => {
+    console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+    server.close(async () => {
+      await disconnectDB();
+      console.log('Server terminated cleanly.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
 
 startServer().catch(err => {
