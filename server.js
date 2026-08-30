@@ -108,7 +108,24 @@ app.post('/api/clustering/run', async (req, res) => {
     }
 
     const result = await ClusteringService.executeAndPersistClustering(participants, teamSize, eventId);
-    res.json(result);
+
+    // Include per-team full-stack coverage metadata in the response
+    const response = {
+      teams: result.teams,
+      clusteringRun: result.clusteringRun,
+      coverageReport: result.coverageReport,
+      summary: {
+        totalTeams: result.teams.length,
+        avgCoverageScore: result.coverageReport
+          ? Math.round(
+              result.coverageReport.reduce((s, r) => s + r.coverageScore, 0) /
+              result.coverageReport.length * 100
+            ) / 100
+          : null,
+      },
+    };
+
+    res.json(response);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

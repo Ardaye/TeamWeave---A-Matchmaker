@@ -49,6 +49,19 @@ const teamSchema = new mongoose.Schema({
     default: false,
   },
   members: [teamMemberSchema],
+  // Full-stack coverage metadata set by the clustering algorithm
+  coverageScore: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 1,
+  },
+  coveredPillars: [{
+    type: String,
+  }],
+  missingPillars: [{
+    type: String,
+  }],
   createdAt: {
     type: Date,
     default: Date.now,
