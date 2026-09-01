@@ -6,3 +6,18 @@ C:\Users\aryan\source\repos\TeamWeave\bin\Debug\TeamWeave.pdb
 C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.exe
 C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.pdb
 C:\Users\aryan\source\repos\TeamWeave\obj\Debug\TeamWeave.exe.config
+C:\Users\HP\source\repos\TeamWeave\bin\Debug\TeamWeave.exe.config
+C:\Users\HP\source\repos\TeamWeave\bin\Debug\TeamWeave.exe
+C:\Users\HP\source\repos\TeamWeave\bin\Debug\TeamWeave.pdb
+C:\Users\HP\source\repos\TeamWeave\obj\Debug\TeamWeave.csproj.AssemblyReference.cache
+C:\Users\HP\source\repos\TeamWeave\obj\Debug\TeamWeave.csproj.CoreCompileInputs.cache
+C:\Users\HP\source\repos\TeamWeave\obj\Debug\TeamWeave.exe
+C:\Users\HP\source\repos\TeamWeave\obj\Debug\TeamWeave.pdb
+C:\TeamWeave - Copy\bin\Debug\TeamWeave.exe.config
+C:\TeamWeave - Copy\bin\Debug\TeamWeave.exe
+C:\TeamWeave - Copy\bin\Debug\TeamWeave.pdb
+C:\TeamWeave - Copy\obj\Debug\TeamWeave.csproj.AssemblyReference.cache
+C:\TeamWeave - Copy\obj\Debug\TeamWeave.exe.config
+C:\TeamWeave - Copy\obj\Debug\TeamWeave.csproj.CoreCompileInputs.cache
+C:\TeamWeave - Copy\obj\Debug\TeamWeave.exe
+C:\TeamWeave - Copy\obj\Debug\TeamWeave.pdb

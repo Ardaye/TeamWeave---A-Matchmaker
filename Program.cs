@@ -19,12 +19,12 @@ namespace TeamWeave
 
             try
             {
-                // Initialize services
+                // the Initialize services
                 var participantService = new ParticipantService();
                 var teamService = new TeamService();
                 var clusteringService = new ClusteringService();
 
-                // Demo: Register participants
+                // Demo: Register participants-----------------------------
                 Console.WriteLine("[1] Registering Participants...\n");
                 var participants = RegisterDemoParticipants(participantService);
                 Console.WriteLine($"? Registered {participants.Count} participants\n");
@@ -44,7 +44,7 @@ namespace TeamWeave
                 var createdTeams = CreateTeamsFromClusters(teamService, teamClusters);
                 Console.WriteLine($"? Created {createdTeams.Count} teams\n");
 
-                // Display team composition
+                // Display team composition in the page
                 Console.WriteLine("[5] Team Composition:\n");
                 DisplayTeamComposition(createdTeams);
 
@@ -59,6 +59,8 @@ namespace TeamWeave
                 }
 
                 // Demo: Lock a team
+
+
                 Console.WriteLine("[7] Locking Final Teams...\n");
                 foreach (var team in createdTeams)
                 {
@@ -87,6 +89,7 @@ namespace TeamWeave
                 Console.WriteLine("========================================");
             }
             catch (Exception ex)
+            //  Catch any unexpected exceptions and display an error message                                                            
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {ex.Message}");
@@ -122,7 +125,10 @@ namespace TeamWeave
             service.AddInterestsToParticipant(p3.Id, new List<string> { "Machine Learning", "Analytics" });
             participants.Add(p3);
 
-            // Participant 4: Full-stack developer
+
+
+
+            // Participant 4: Full-stack develope----
             var p4 = service.RegisterParticipant("David Lee", "david@example.com", new List<string> { "JavaScript", "Node.js" });
             service.AddSkillToParticipant(p4.Id, SkillRepository.GetSkillByName("JavaScript"), 4);
             service.AddSkillToParticipant(p4.Id, SkillRepository.GetSkillByName("Node.js"), 4);
@@ -151,7 +157,10 @@ namespace TeamWeave
             foreach (var participant in participants)
             {
                 Console.Write($"{participant.Id}. {participant.Name,-20} | Skills: ");
+
+
                 var skills = string.Join(", ", participant.Skills.Select(ps => $"{ps.Skill.Name}({ps.ProficiencyLevel})"));
+
                 Console.WriteLine(skills);
             }
         }
@@ -159,6 +168,7 @@ namespace TeamWeave
         private static List<Team> CreateTeamsFromClusters(TeamService service, List<List<Participant>> clusters)
         {
             var teams = new List<Team>();
+
             int teamCounter = 1;
 
             foreach (var cluster in clusters)
