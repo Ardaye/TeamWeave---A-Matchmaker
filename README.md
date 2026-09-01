@@ -276,7 +276,7 @@ npm run dev
 
 ### 5. Open in Browser
 
-Visit [http://localhost:3000](http://localhost:3000).
+Visit [np](http://localhost:3000).
 
 ---
 
