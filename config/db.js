@@ -35,9 +35,15 @@ export const connectDB = async () => {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
-    console.log(`Initializing persistent embedded MongoDB engine with storage path: ${dataDir}...`);
+    const memoryServerVersion = process.env.MONGODB_MEMORY_SERVER_VERSION || '7.0.3';
+    console.log(
+      `Initializing persistent embedded MongoDB engine with storage path: ${dataDir} and version ${memoryServerVersion}...`
+    );
     const { MongoMemoryServer } = await import('mongodb-memory-server');
     mongoServer = await MongoMemoryServer.create({
+      binary: {
+        version: memoryServerVersion,
+      },
       instance: {
         dbPath: dataDir,
         storageEngine: 'wiredTiger',
